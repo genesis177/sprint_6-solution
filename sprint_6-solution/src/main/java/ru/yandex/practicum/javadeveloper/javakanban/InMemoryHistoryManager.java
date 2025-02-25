@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 public class InMemoryHistoryManager implements HistoryManager {
-
+    private static final int MAX_HISTORY_SIZE = 10;
     private Node head;
     private Node tail;
     private Map<Integer, Node> historyMap = new HashMap<>();
@@ -20,6 +20,11 @@ public class InMemoryHistoryManager implements HistoryManager {
         Node newNode = new Node(task);
         linkLast(newNode);
         historyMap.put(task.getId(), newNode);
+
+        // Удаляем старую задачу, если превышен лимит
+        if (historyMap.size() > MAX_HISTORY_SIZE) {
+            remove(head.task.getId());
+        }
     }
 
     @Override
@@ -62,6 +67,16 @@ public class InMemoryHistoryManager implements HistoryManager {
             node.next.prev = node.prev;
         } else {
             tail = node.prev;
+        }
+    }
+
+    private static class Node {
+        private Task task;
+        private Node next;
+        private Node prev;
+
+        public Node(Task task) {
+            this.task = task;
         }
     }
 }
