@@ -1,49 +1,83 @@
 package ru.yandex.practicum.javadeveloper.javakanban;
 
-
 import java.util.ArrayList;
-
-
+import java.util.HashMap;
 import java.util.List;
-
+import java.util.Map;
 
 public class InMemoryHistoryManager implements HistoryManager {
-
-
-    private List<Task> history = new ArrayList<>();
-
-
+    
+    private static final int MAX_HISTORY_SIZE = 10;
+    private Node head;
+    private Node tail;
+    private Map<Integer, Node> historyMap = new HashMap<>();
+    
     @Override
-
-
     public void add(Task task) {
-
-
-        history.add(task);
-
-
-        if (history.size() > 10) {
-
-
-            history.remove(0);
-
-
+        if (historyMap.containsKey(task.getId())) {
+            remove(task.getId());
         }
 
+        Node newNode = new Node(task);
+        linkLast(newNode);
+        historyMap.put(task.getId(), newNode);
 
+        // Удаляем старую задачу, если превышен лимит
+        if (historyMap.size() > MAX_HISTORY_SIZE) {
+            remove(head.task.getId());
+        }
     }
-
 
     @Override
-
-
-    public List<Task> getHistory() {
-
-
-        return new ArrayList<>(history);
-
-
+    public void remove(int id) {
+        Node nodeToRemove = historyMap.remove(id);
+        if (nodeToRemove != null) {
+            removeNode(nodeToRemove);
+        }
     }
 
+    @Override
+    public List<Task> getHistory() {
+        List<Task> history = new ArrayList<>();
+        Node current = head;
+        while (current != null) {
+            history.add(current.task);
+            current = current.next;
+        }
+        return history;
+    }
 
+    private void linkLast(Node newNode) {
+        if (tail == null) {
+            head = newNode;
+            tail = newNode;
+        } else {
+            tail.next = newNode;
+            newNode.prev = tail;
+            tail = newNode;
+        }
+    }
+
+    private void removeNode(Node node) {
+        if (node.prev != null) {
+            node.prev.next = node.next;
+        } else {
+            head = node.next;
+        }
+        if (node.next != null) {
+            node.next.prev = node.prev;
+        } else {
+            tail = node.prev;
+        }
+    }
+
+    private static class Node {
+        private Task task;
+        private Node next;
+        private Node prev;
+
+        public Node(Task task) {
+            this.task = task;
+        }
+    }
 }
