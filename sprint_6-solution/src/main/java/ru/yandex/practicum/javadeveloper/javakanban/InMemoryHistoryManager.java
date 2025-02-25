@@ -6,11 +6,12 @@ import java.util.List;
 import java.util.Map;
 
 public class InMemoryHistoryManager implements HistoryManager {
+    
     private static final int MAX_HISTORY_SIZE = 10;
     private Node head;
     private Node tail;
     private Map<Integer, Node> historyMap = new HashMap<>();
-
+    
     @Override
     public void add(Task task) {
         if (historyMap.containsKey(task.getId())) {
